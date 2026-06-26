@@ -1,10 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const swaggerUi = require('swagger-ui-express');
+const express = require("express");
+const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
 
-const membersRouter = require('./routes/members');
-const uploadImageRouter = require('./routes/uploadImage');
-const swaggerDoc = require('./fixtures/swagger.json');
+const membersRouter = require("./routes/members");
+const uploadImageRouter = require("./routes/uploadImage");
+const swaggerDoc = require("./fixtures/swagger.json");
 
 const app = express();
 
@@ -13,16 +13,19 @@ const app = express();
 // ───────────────────────────────────────────────────────────
 //
 //   1. 解跨域（cors middleware，必須在所有路由之前）
+app.use(cors()); // 允許來自不同網域的請求，避免 CORS 錯誤
 //   2. 解析 JSON body（否則 POST / PUT 的 req.body 會是 undefined）
+app.use(express.json()); // 讓 Express 能夠讀懂前端傳來的 JSON 格式資料
 //   3. 掛載 Swagger UI（已預先提供如下，同學不需調整）：
 //      app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc)); // 建立 API 文件頁面
 //   4. 把 membersRouter 掛載到 '/members' 路徑下
+app.use("/members", membersRouter); // 當網址為 /members 開頭時，交給 membersRouter 處理
 //   5. 把 uploadImageRouter 掛載到 '/uploadImage' 路徑下
+app.use("/uploadImage", uploadImageRouter); // 當網址為 /uploadImage 開頭時，交給 uploadImageRouter 處理
 //
 // ✅ 未匹配的路由（如 GET /unknown）Express 預設會回 404，不需另外加 middleware
 //
 // ⚠️ **最後不需呼叫 app.listen()** — 這個部分交由 server.js 負責（分離「組裝」跟「啟動」，這樣 test.js 可以 supertest 直接戳 app、不佔 port）。
-
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 module.exports = app;
